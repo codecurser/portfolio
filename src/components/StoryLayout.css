@@ -1,0 +1,80 @@
+.story-layout {
+  position: relative;
+  width: 100%;
+}
+
+.story-timeline-container {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 2rem;
+  width: 2px;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.story-timeline-line {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.story-timeline-progress {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: var(--accent-color);
+  box-shadow: 0 0 10px var(--accent-color);
+  transform-origin: top;
+}
+
+.story-content {
+  position: relative;
+  z-index: 1;
+}
+
+/* Adjust section padding to account for the left timeline */
+@media (min-width: 768px) {
+  .story-timeline-container {
+    left: 4rem;
+  }
+  .section {
+    padding-left: 8rem;
+    padding-right: 4rem;
+  }
+}
+
+@media (max-width: 767px) {
+  .story-timeline-container {
+    left: 1rem;
+    display: none; /* Hide on very small screens if it clutters */
+  }
+}
+
+.timeline-glow {
+  position: absolute;
+  top: 0; left: -10px; width: 22px; height: 100%;
+  background: var(--accent-glow);
+  filter: blur(20px);
+  z-index: -1;
+  opacity: 0.8;
+}
+
+.parallax-bg-text {
+  position: absolute;
+  font-size: 8vw;
+  color: rgba(0, 242, 254, 0.03);
+  z-index: 0;
+  pointer-events: none;
+  font-weight: 800;
+  white-space: nowrap;
+  transform-origin: left center;
+  transform: rotate(90deg) !important;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
