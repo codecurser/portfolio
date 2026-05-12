@@ -11,8 +11,8 @@ const AnimatedShape = () => {
   
   useFrame((state) => {
     if (meshRef.current) {
-      meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.15;
-      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.25;
+      meshRef.current.rotation.x = state.clock.getElapsedTime() * 0.15 + state.pointer.y * 0.3;
+      meshRef.current.rotation.y = state.clock.getElapsedTime() * 0.25 + state.pointer.x * 0.3;
     }
   });
 
@@ -57,10 +57,11 @@ const Hero = () => {
             {"ARYAN".split("").map((char, i) => (
               <motion.span
                 key={i}
-                initial={{ opacity: 0, y: 50 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: i * 0.1 }}
-                style={{ display: "inline-block" }}
+                initial={{ opacity: 0, y: 50, rotateX: -90 }}
+                animate={{ opacity: 1, y: 0, rotateX: 0 }}
+                whileHover={{ scale: 1.2, color: "#00f2fe", y: -10, textShadow: "0px 10px 20px rgba(0,242,254,0.5)" }}
+                transition={{ type: "spring", bounce: 0.6, duration: 0.8, delay: i * 0.1 }}
+                style={{ display: "inline-block", transformOrigin: "bottom", cursor: "crosshair" }}
               >
                 {char}
               </motion.span>
@@ -98,15 +99,25 @@ const Hero = () => {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.8, delay: 0.6 }}
+            transition={{ type: "spring", bounce: 0.5, duration: 0.8, delay: 0.6 }}
             className="hero-actions"
           >
-            <a href="#projects" className="btn-primary cyber-border">
+            <motion.a 
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              href="#projects" 
+              className="btn-primary cyber-border"
+            >
               INITIATE_PREVIEW <ArrowRight size={18} />
-            </a>
-            <a href="#contact" className="btn-outline font-mono hover-glitch">
+            </motion.a>
+            <motion.a 
+              whileHover={{ scale: 1.05, y: -5 }}
+              whileTap={{ scale: 0.95 }}
+              href="#contact" 
+              className="btn-outline font-mono hover-glitch"
+            >
               <Terminal size={18} /> ./contact_me.sh
-            </a>
+            </motion.a>
           </motion.div>
 
           <motion.div 

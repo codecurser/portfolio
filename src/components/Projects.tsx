@@ -1,6 +1,6 @@
-import React, { useRef } from 'react';
-import { motion, useMotionTemplate, useMotionValue } from 'framer-motion';
-import { ExternalLink, Github, BookOpen } from 'lucide-react';
+import React, { useRef, useState } from 'react';
+import { motion, useMotionTemplate, useMotionValue, useSpring, useTransform, AnimatePresence } from 'framer-motion';
+import { ExternalLink, Github, BookOpen, Maximize, X } from 'lucide-react';
 import './Projects.css';
 
 const projects = [
@@ -9,7 +9,15 @@ const projects = [
     subtitle: 'Health-Tech Startup Website (Client Project)',
     tech: ['TypeScript', 'Node.js', 'MySQL', 'React', 'REST APIs'],
     description: 'Delivered a production-ready website for a health-tech startup. Designed and implemented backend APIs with structured request-response handling and secure data persistence using MySQL. Built an admin-controlled content management workflow enabling non-technical stakeholders to update site content securely.',
-    link: '#',
+    link: 'https://ataryo.com',
+    github: '#'
+  },
+  {
+    title: 'Dr. Mohit Mathur',
+    subtitle: 'Professional Portfolio Website (Client Project)',
+    tech: ['React', 'TypeScript', 'Tailwind CSS', 'Vite'],
+    description: 'Designed and developed a fully responsive professional portfolio website for a medical practitioner. Built with modern web technologies to ensure high performance and accessibility, featuring dynamic sections for services, patient testimonials, and contact information.',
+    link: 'https://drmohitmathur.com',
     github: '#'
   },
   {
@@ -33,26 +41,55 @@ const publications = [
   }
 ];
 
-const ProjectCard = ({ project, index }: { project: typeof projects[0], index: number }) => {
+const ProjectCard = ({ project, index, onOpenSite }: { project: typeof projects[0], index: number, onOpenSite: (url: string) => void }) => {
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
   const ref = useRef<HTMLDivElement>(null);
 
+  const mouseXSpring = useSpring(x, { stiffness: 300, damping: 30 });
+  const mouseYSpring = useSpring(y, { stiffness: 300, damping: 30 });
+  const rotateX = useTransform(mouseYSpring, [-0.5, 0.5], ["10deg", "-10deg"]);
+  const rotateY = useTransform(mouseXSpring, [-0.5, 0.5], ["-10deg", "10deg"]);
+
   function handleMouseMove({ currentTarget, clientX, clientY }: React.MouseEvent) {
-    const { left, top } = currentTarget.getBoundingClientRect();
-    mouseX.set(clientX - left);
-    mouseY.set(clientY - top);
+    const rect = currentTarget.getBoundingClientRect();
+    const width = rect.width;
+    const height = rect.height;
+
+    const mouseXPos = clientX - rect.left;
+    const mouseYPos = clientY - rect.top;
+
+    mouseX.set(mouseXPos);
+    mouseY.set(mouseYPos);
+
+    const xPct = mouseXPos / width - 0.5;
+    const yPct = mouseYPos / height - 0.5;
+    x.set(xPct);
+    y.set(yPct);
+  }
+
+  function handleMouseLeave() {
+    x.set(0);
+    y.set(0);
   }
 
   return (
     <motion.div
       ref={ref}
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
+      initial={{ opacity: 0, y: 50, scale: 0.9 }}
+      whileInView={{ opacity: 1, y: 0, scale: 1 }}
       viewport={{ once: false, amount: 0.2 }}
-      transition={{ duration: 0.6, delay: index * 0.2 }}
+      transition={{ duration: 0.7, delay: index * 0.15, type: "spring", bounce: 0.4 }}
       className="project-card"
       onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
+      style={{
+        rotateX,
+        rotateY,
+        transformStyle: "preserve-3d"
+      }}
     >
       <motion.div
         className="card-glow"
@@ -64,11 +101,21 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
               transparent 80%
             )
           `,
+          transform: "translateZ(-1px)"
         }}
       />
-      <div className="project-content">
+      <div className="project-content" style={{ transform: "translateZ(30px)" }}>
         <h3 className="project-title">{project.title}</h3>
-        <p className="project-subtitle">{project.subtitle}</p>
+        <p className="project-subtitle">
+          {project.subtitle}
+          {project.link !== '#' && (
+            <span style={{ display: 'block', marginTop: '0.5rem', fontFamily: 'var(--font-mono)' }}>
+              <a href={project.link} target="_blank" rel="noreferrer" style={{ color: 'var(--accent-color)', textDecoration: 'underline', opacity: 0.8 }}>
+                {project.link.replace('https://', '')}
+              </a>
+            </span>
+          )}
+        </p>
         
         <div className="tech-stack">
           {project.tech.map((tech, i) => (
@@ -83,7 +130,20 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
             <Github size={20} />
             <span>Code</span>
           </a>
-          <a href={project.link} className="icon-link">
+          <a 
+            href={project.link} 
+            className="icon-link"
+            onClick={(e) => {
+              if (project.link !== '#') {
+                e.preventDefault();
+                onOpenSite(project.link);
+              }
+            }}
+          >
+            <Maximize size={20} />
+            <span>In-Site Preview</span>
+          </a>
+          <a href={project.link} target="_blank" rel="noreferrer" className="icon-link">
             <ExternalLink size={20} />
             <span>Live Demo</span>
           </a>
@@ -94,6 +154,8 @@ const ProjectCard = ({ project, index }: { project: typeof projects[0], index: n
 };
 
 const Projects: React.FC = () => {
+  const [activeSite, setActiveSite] = useState<string | null>(null);
+
   return (
     <section id="projects" className="section projects-section">
       <motion.div
@@ -115,7 +177,7 @@ const Projects: React.FC = () => {
 
       <div className="projects-grid">
         {projects.map((project, index) => (
-          <ProjectCard key={index} project={project} index={index} />
+          <ProjectCard key={index} project={project} index={index} onOpenSite={(url) => setActiveSite(url)} />
         ))}
       </div>
 
@@ -138,6 +200,32 @@ const Projects: React.FC = () => {
           ))}
         </div>
       </motion.div>
+
+      <AnimatePresence>
+        {activeSite && activeSite !== '#' && (
+          <motion.div 
+            initial={{ opacity: 0 }} 
+            animate={{ opacity: 1 }} 
+            exit={{ opacity: 0 }} 
+            className="site-modal-overlay"
+            onClick={() => setActiveSite(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 50 }} 
+              animate={{ scale: 1, y: 0 }} 
+              exit={{ scale: 0.9, y: 50 }}
+              className="site-modal-content glass-panel"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="modal-header">
+                <span className="font-mono text-accent">{activeSite}</span>
+                <button className="close-btn" onClick={() => setActiveSite(null)}><X size={24} /></button>
+              </div>
+              <iframe src={activeSite} className="site-iframe" title="Live Preview" />
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </section>
   );
 };
